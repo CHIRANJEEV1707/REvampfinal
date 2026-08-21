@@ -215,7 +215,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 brutalist-grid opacity-20" />
         <div className="relative z-10 max-w-[900px] mx-auto text-center">
           <h2 className="font-headline font-bold text-5xl md:text-7xl lg:text-8xl tracking-tight text-white leading-[0.95] mb-8">
-            Your resume is empty. Your GitHub is greener. <span className="text-black">Which one matters?</span>
+            Your resume is empty. Your GitHub is greener. <span className="bg-[#0085FF] text-white px-2">Which one matters?</span>
           </h2>
           <p className="text-white/80 text-lg mb-12 max-w-md mx-auto">Next batch starts soon. We don&apos;t do waitlists. You&apos;re either in or you&apos;re catching up.</p>
           <Link href="/events" className="inline-block bg-[#0085FF] text-white px-12 py-5 font-headline font-extrabold text-lg tracking-wide neumorph-panel hover:shadow-neumorph-inset transition-all">
