@@ -1,9 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Clock, Flame } from "lucide-react"
-
-const DEADLINE = new Date("2026-02-24T12:00:00+05:30").getTime()
 
 interface TimeLeft {
     days: number
@@ -12,10 +9,10 @@ interface TimeLeft {
     seconds: number
 }
 
-function getTimeLeft(): TimeLeft {
-    const now = Date.now()
-    const diff = Math.max(0, DEADLINE - now)
+type Phase = "upcoming" | "live" | "ended"
 
+function getTimeLeft(target: number): TimeLeft {
+    const diff = Math.max(0, target - Date.now())
     return {
         days: Math.floor(diff / (1000 * 60 * 60 * 24)),
         hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
@@ -24,77 +21,112 @@ function getTimeLeft(): TimeLeft {
     }
 }
 
-function TimeBox({ value, label }: { value: number; label: string }) {
+function TimeBox({ value, label, accent }: { value: number; label: string; accent: string }) {
     return (
         <div className="flex flex-col items-center">
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-gray-900 border border-blue-500/30 rounded-xl shadow-lg shadow-blue-500/5">
-                <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white tabular-nums">
+            <div
+                className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-black border"
+                style={{ borderColor: `${accent}25` }}
+            >
+                <span className="font-headline font-black text-2xl sm:text-3xl tracking-tight text-white tabular-nums">
                     {String(value).padStart(2, "0")}
                 </span>
-                <div className="absolute inset-0 rounded-xl bg-blue-500/5" />
             </div>
-            <span className="mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-gray-500">
+            <span className="mt-2 text-[9px] font-black uppercase tracking-[0.2em] text-white/25">
                 {label}
             </span>
         </div>
     )
 }
 
-export default function CountdownTimer() {
-    const [timeLeft, setTimeLeft] = useState<TimeLeft>(getTimeLeft())
-    const [expired, setExpired] = useState(false)
+interface CountdownTimerProps {
+    /** ISO timestamp the countdown runs down to. */
+    targetIso: string
+    /** Optional ISO end time — between target and end the timer shows a LIVE state. */
+    endIso?: string
+    /** Small kicker above the clock. */
+    label?: string
+    /** Human-readable date line under the clock. */
+    subtitle?: string
+    accent?: string
+}
+
+export default function CountdownTimer({
+    targetIso,
+    endIso,
+    label = "Starts in",
+    subtitle,
+    accent = "#0085FF",
+}: CountdownTimerProps) {
+    const target = new Date(targetIso).getTime()
+    const end = endIso ? new Date(endIso).getTime() : null
+
+    // Computed after mount only — Date.now() during SSR would cause a hydration mismatch.
+    const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
+    const [phase, setPhase] = useState<Phase>("upcoming")
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            const tl = getTimeLeft()
-            setTimeLeft(tl)
-            if (tl.days === 0 && tl.hours === 0 && tl.minutes === 0 && tl.seconds === 0) {
-                setExpired(true)
-                clearInterval(timer)
-            }
-        }, 1000)
+        const tick = () => {
+            const now = Date.now()
+            if (end && now >= end) { setPhase("ended"); setTimeLeft(getTimeLeft(target)); return }
+            if (now >= target) { setPhase(end ? "live" : "ended"); setTimeLeft(getTimeLeft(target)); return }
+            setPhase("upcoming")
+            setTimeLeft(getTimeLeft(target))
+        }
+        tick()
+        const timer = setInterval(tick, 1000)
         return () => clearInterval(timer)
-    }, [])
+    }, [target, end])
 
-    if (expired) {
+    if (phase === "live") {
         return (
-            <div className="text-center py-8">
-                <p className="text-xl font-bold text-red-400">🔥 The 50% OFF sale has ended!</p>
+            <div className="border border-red-500/20 bg-red-500/[0.04] p-8 text-center">
+                <div className="inline-flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-red-400">Live now</span>
+                </div>
+                <p className="font-headline font-black text-2xl">The session is running.</p>
+                {subtitle && <p className="text-white/30 text-xs mt-2">{subtitle}</p>}
+            </div>
+        )
+    }
+
+    if (phase === "ended") {
+        return (
+            <div className="border border-white/[0.06] bg-[#0d0d0d] p-8 text-center">
+                <span className="material-symbols-outlined text-3xl text-white/15 block mb-2">event_available</span>
+                <p className="font-headline font-bold text-lg text-white/40">This session has wrapped.</p>
+                {subtitle && <p className="text-white/20 text-xs mt-1">{subtitle}</p>}
             </div>
         )
     }
 
     return (
-        <div className="relative w-full max-w-2xl mx-auto">
-            {/* Glow background */}
-            <div className="absolute inset-0 -m-4 rounded-3xl bg-blue-500/5 blur-2xl" />
+        <div className="border border-white/[0.06] bg-[#0d0d0d] p-8 flex flex-col items-center">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] mb-5" style={{ color: accent }}>
+                {label}
+            </span>
 
-            <div className="relative flex flex-col items-center p-8 border border-blue-500/20 rounded-2xl bg-gray-950/80 backdrop-blur-sm">
-                {/* Badge */}
-                <div className="inline-flex items-center px-4 py-1.5 mb-5 space-x-2 text-xs font-bold uppercase tracking-wider border rounded-full bg-blue-600/10 border-blue-500/30 text-blue-400">
-                    <Flame className="w-3.5 h-3.5" />
-                    <span>Limited Time Offer</span>
-                </div>
-
-                {/* Title */}
-                <h2 className="mb-2 text-xl sm:text-2xl font-extrabold tracking-tight text-white text-center">
-                    50% OFF ends at <span className="text-blue-400">12 PM, 23rd Feb</span>
-                </h2>
-                <p className="mb-6 text-sm text-gray-400 text-center">
-                    Grab your spot before the price doubles!
-                </p>
-
-                {/* Timer */}
-                <div className="flex items-center space-x-3 sm:space-x-4">
-                    <TimeBox value={timeLeft.days} label="Days" />
-                    <span className="text-2xl font-bold text-blue-500/50 mt-[-20px]">:</span>
-                    <TimeBox value={timeLeft.hours} label="Hours" />
-                    <span className="text-2xl font-bold text-blue-500/50 mt-[-20px]">:</span>
-                    <TimeBox value={timeLeft.minutes} label="Mins" />
-                    <span className="text-2xl font-bold text-blue-500/50 mt-[-20px]">:</span>
-                    <TimeBox value={timeLeft.seconds} label="Secs" />
-                </div>
+            <div className="flex items-start gap-3 sm:gap-4">
+                {timeLeft ? (
+                    <>
+                        <TimeBox value={timeLeft.days} label="Days" accent={accent} />
+                        <span className="font-headline font-black text-2xl text-white/15 leading-[3.6rem] sm:leading-[4.4rem]">:</span>
+                        <TimeBox value={timeLeft.hours} label="Hours" accent={accent} />
+                        <span className="font-headline font-black text-2xl text-white/15 leading-[3.6rem] sm:leading-[4.4rem]">:</span>
+                        <TimeBox value={timeLeft.minutes} label="Mins" accent={accent} />
+                        <span className="font-headline font-black text-2xl text-white/15 leading-[3.6rem] sm:leading-[4.4rem]">:</span>
+                        <TimeBox value={timeLeft.seconds} label="Secs" accent={accent} />
+                    </>
+                ) : (
+                    // Placeholder of identical size so the layout doesn't jump on mount
+                    <div className="h-[88px] sm:h-[104px]" aria-hidden />
+                )}
             </div>
+
+            {subtitle && (
+                <p className="mt-6 text-xs text-white/30 text-center">{subtitle}</p>
+            )}
         </div>
     )
 }

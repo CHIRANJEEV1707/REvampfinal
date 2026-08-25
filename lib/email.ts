@@ -58,7 +58,7 @@ export async function sendOrderConfirmationEmail(to: string, userName: string, w
           <img src="https://ik.imagekit.io/cotszrkgk/Screenshot_2025-06-25_at_9.10.56_PM-removebg-preview.png?updatedAt=1756648034230" alt="REvamp" style="height: 60px; margin-bottom: 30px;" />
           <p style="color: #4ade80; font-size: 12px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px;">Submission Received</p>
           <h1 style="font-size: 28px; margin-bottom: 16px;">Thanks, ${userName.split(' ')[0]}!</h1>
-          <p style="color: #999; font-size: 16px; line-height: 1.6;">We've received your payment details for <strong style="color: #fff;">${workshopName}</strong>. Our team will verify your transaction and add you to the WhatsApp group.</p>
+          <p style="color: #999; font-size: 16px; line-height: 1.6;">We've received your payment details for <strong style="color: #fff;">${workshopName}</strong>. Our team will verify your transaction, then your dashboard unlocks with everything you need.</p>
           <p style="color: #999; font-size: 16px; line-height: 1.6;">Your referral link will be available on your dashboard once verified.</p>
           <a href="https://letsrevamp.in/dashboard?tab=orders" style="display: inline-block; margin-top: 24px; padding: 14px 32px; background: #0085FF; color: #fff; text-decoration: none; font-weight: bold; font-size: 14px;">View Order Status →</a>
           <p style="color: #555; font-size: 12px; margin-top: 40px;">© 2026 REvamp Tech Collective</p>

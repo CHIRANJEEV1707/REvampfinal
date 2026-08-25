@@ -54,7 +54,7 @@ export async function sendPendingEmail(
               <ul style="margin: 0; padding: 0 0 0 20px; color: #d1d5db; font-size: 14px; line-height: 2;">
                 <li>Our team verifies your transaction ID</li>
                 <li>You'll receive a confirmation email</li>
-                <li>We'll add you to the WhatsApp community group</li>
+                <li>We'll send your community invite once it's verified</li>
                 <li>Your referral link will be on your dashboard</li>
               </ul>
             </div>
@@ -114,7 +114,7 @@ export async function sendPaymentConfirmationEmail(
             <div style="background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 24px; margin: 24px 0;">
               <h3 style="margin: 0 0 16px; font-size: 14px; text-transform: uppercase; color: #9ca3af; letter-spacing: 1px;">✅ What's Next</h3>
               <ul style="margin: 0; padding: 0 0 0 20px; color: #d1d5db; font-size: 14px; line-height: 2.2;">
-                <li>You've been <strong style="color: #fff;">added to the WhatsApp community group</strong></li>
+                <li>Your <strong style="color: #fff;">community invite and setup guide</strong> are on your dashboard</li>
                 <li>Your <strong style="color: #10b981;">referral link</strong> is available on your dashboard</li>
                 <li>Share it with friends to earn <strong style="color: #10b981;">₹100–200</strong> per referral!</li>
               </ul>

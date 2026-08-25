@@ -3,8 +3,10 @@
 import { useEffect, useState, useCallback, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import FirstStepTab from "./FirstStepTab"
+import { LAUNCHPAD_FLAGSHIP_SLUG, LAUNCHPAD_FIRST_STEP_SLUG } from "@/lib/launchpad"
 
-type Tab = "home" | "learning" | "orders" | "referrals" | "domains" | "achievements" | "resources" | "connections" | "settings" | "launchpad"
+type Tab = "home" | "learning" | "orders" | "referrals" | "domains" | "achievements" | "resources" | "connections" | "settings" | "launchpad" | "firstStep"
 
 const BASE_TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "home",         label: "Home",         icon: "home" },
@@ -19,6 +21,7 @@ const BASE_TABS: { id: Tab; label: string; icon: string }[] = [
 ]
 
 const LAUNCHPAD_TAB: { id: Tab; label: string; icon: string } = { id: "launchpad", label: "Launchpad", icon: "rocket_launch" }
+const FIRST_STEP_TAB: { id: Tab; label: string; icon: string } = { id: "firstStep", label: "First Step", icon: "bolt" }
 
 const TAB_ALIASES: Record<string, Tab> = { overview: "home", workshops: "learning" }
 
@@ -515,12 +518,30 @@ function DashboardContent() {
   const xpProgress = user.nextLevelXp > 0 ? Math.min(100, Math.round((user.xp / user.nextLevelXp) * 100)) : 100
   const filteredResources = resourceFilter === "ALL" ? resources : resources.filter((r: any) => r.type === resourceFilter)
 
+  // Where an enrolment's row should take you. Products with their own gated
+  // dashboard go there; everything else falls back to My Learning.
+  const enrolmentDestination = (en: any): { tab: Tab; label: string } => {
+    if (en.bundle?.slug === LAUNCHPAD_FIRST_STEP_SLUG) return { tab: "firstStep", label: "Open session dashboard" }
+    if (en.bundle?.slug === LAUNCHPAD_FLAGSHIP_SLUG)   return { tab: "launchpad", label: "Open Launchpad dashboard" }
+    return { tab: "learning", label: "Open workshop dashboard" }
+  }
+
+  // Gate per product, not per cohort. Launchpad is a category with several
+  // products; each unlocks only its own dashboard. Gating on cohortSlug would
+  // hand every Launchpad buyer the 4-week programme regardless of what they bought.
   const hasLaunchpadAccess = (enrollments || []).some((e: any) =>
-    (e.bundle?.cohortSlug === 'launchpad' || e.bundle?.cohort?.slug === 'launchpad') && e.status !== 'REVOKED'
+    e.bundle?.slug === LAUNCHPAD_FLAGSHIP_SLUG && e.status !== 'REVOKED'
   )
-  const TABS = hasLaunchpadAccess
-    ? [BASE_TABS[0], BASE_TABS[1], LAUNCHPAD_TAB, ...BASE_TABS.slice(2)]
-    : BASE_TABS
+  const hasFirstStepAccess = (enrollments || []).some((e: any) =>
+    e.bundle?.slug === LAUNCHPAD_FIRST_STEP_SLUG && e.status !== 'REVOKED'
+  )
+  const TABS = [
+    BASE_TABS[0],
+    BASE_TABS[1],
+    ...(hasLaunchpadAccess ? [LAUNCHPAD_TAB] : []),
+    ...(hasFirstStepAccess ? [FIRST_STEP_TAB] : []),
+    ...BASE_TABS.slice(2),
+  ]
 
   // ── shared input style ─────────────────────────────
   const inputCls = "w-full bg-[#0a0a0a] border border-white/[0.08] px-3 py-2.5 text-sm text-white placeholder:text-white/15 outline-none focus:border-[#0085FF]/60 transition-colors"
@@ -731,18 +752,31 @@ function DashboardContent() {
                         </div>
                       ) : (
                         <div className="divide-y divide-white/[0.04]">
-                          {(enrollments || []).slice(0, 4).map((en: any) => (
-                            <div key={en.id} className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.025] transition-colors group cursor-default">
+                          {(enrollments || []).slice(0, 4).map((en: any) => {
+                            // Each enrolment has its own home. Without this the row is a
+                            // dead end and buyers never find their event dashboard.
+                            const dest = enrolmentDestination(en)
+                            return (
+                            <button
+                              key={en.id}
+                              onClick={() => switchTab(dest.tab)}
+                              className="w-full text-left flex items-center gap-4 px-5 py-4 hover:bg-white/[0.025] transition-colors group cursor-pointer"
+                            >
                               <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: `${en.bundle?.cohort?.accentHex || '#8b5cf6'}18`, borderRadius: '10px', border: `1px solid ${en.bundle?.cohort?.accentHex || '#8b5cf6'}30` }}>
                                 <span className="material-symbols-outlined text-[18px]" style={{ color: en.bundle?.cohort?.accentHex || '#8b5cf6', fontVariationSettings: "'FILL' 1" }}>school</span>
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-bold text-sm truncate">{en.bundle?.name}</p>
                                 <p className="text-white/30 text-[11px] truncate">{en.bundle?.cohort?.name || en.bundle?.cohortSlug} · {en.bundle?.duration}</p>
+                                <p className="text-[#0085FF] text-[11px] font-bold mt-1 flex items-center gap-1">
+                                  {dest.label}
+                                  <span className="material-symbols-outlined text-[13px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+                                </p>
                               </div>
                               <StatusBadge status={en.status} />
-                            </div>
-                          ))}
+                            </button>
+                            )
+                          })}
                         </div>
                       )}
                     </div>
@@ -871,8 +905,14 @@ function DashboardContent() {
                     const discussions = workshopDiscussions[en.bundle?.id] || []
                     return (
                       <div key={en.id} className={`border transition-all ${isExpanded ? "border-[#0085FF]/25 bg-[#0085FF]/[0.02]" : "border-white/[0.06] bg-[#0d0d0d] hover:border-white/10"}`}>
-                        <button onClick={() => loadPeersAndDiscussions(en.bundle?.id)} className="w-full p-5 text-left">
-                          <div className="flex items-center gap-4">
+                        {/* Split header: the title area toggles peers/discussion, while
+                            products with their own dashboard get a direct launch button.
+                            Kept as siblings — a button inside a button is invalid HTML. */}
+                        <div className="flex items-center gap-4 p-5">
+                          <button
+                            onClick={() => loadPeersAndDiscussions(en.bundle?.id)}
+                            className="flex items-center gap-4 flex-1 min-w-0 text-left"
+                          >
                             <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: `${en.bundle?.cohort?.accentHex || '#8b5cf6'}18`, border: `1px solid ${en.bundle?.cohort?.accentHex || '#8b5cf6'}25` }}>
                               <span className="material-symbols-outlined text-[18px]" style={{ color: en.bundle?.cohort?.accentHex || '#8b5cf6', fontVariationSettings: "'FILL' 1" }}>school</span>
                             </div>
@@ -881,14 +921,29 @@ function DashboardContent() {
                                 <span className="text-[9px] text-white/25 font-bold uppercase tracking-wider">{en.bundle?.cohort?.name}</span>
                               </div>
                               <h3 className="font-headline font-bold text-base truncate">{en.bundle?.name}</h3>
-                              <p className="text-white/25 text-[10px] mt-0.5">{en.bundle?.duration} · Enrolled {new Date(en.enrolledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
+                              <p className="text-white/25 text-[10px] mt-0.5">{[en.bundle?.duration, `Enrolled ${new Date(en.enrolledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`].filter(Boolean).join(" · ")}</p>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0">
-                              <StatusBadge status={en.status} />
+                          </button>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <StatusBadge status={en.status} />
+                            {enrolmentDestination(en).tab !== "learning" && (
+                              <button
+                                onClick={() => switchTab(enrolmentDestination(en).tab)}
+                                className="flex items-center gap-1.5 bg-[#0085FF] text-white px-4 py-2 text-[11px] font-bold hover:bg-[#0070DD] transition-colors whitespace-nowrap"
+                              >
+                                Launch dashboard
+                                <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                              </button>
+                            )}
+                            <button
+                              onClick={() => loadPeersAndDiscussions(en.bundle?.id)}
+                              aria-label={isExpanded ? "Collapse" : "Expand"}
+                              className="flex items-center"
+                            >
                               <span className={`material-symbols-outlined text-white/20 text-base transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}>expand_more</span>
-                            </div>
+                            </button>
                           </div>
-                        </button>
+                        </div>
 
                         {isExpanded && (
                           <div className="border-t border-white/[0.05] p-5 animate-in fade-in duration-200">
@@ -1723,6 +1778,8 @@ function DashboardContent() {
           )}
 
           {/* ──────────────────────── LAUNCHPAD TAB ─── */}
+          {activeTab === "firstStep" && <FirstStepTab userName={user.name} />}
+
           {activeTab === "launchpad" && (
             <div className="animate-in fade-in duration-300 px-6 md:px-8 py-8 max-w-5xl mx-auto space-y-8">
 

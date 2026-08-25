@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import jwt from 'jsonwebtoken'
 import { env } from '@/lib/env'
+import { LAUNCHPAD_FLAGSHIP_SLUG } from '@/lib/launchpad'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,13 +26,15 @@ export async function GET(req: NextRequest) {
 
   const bundleIds = (enrollmentRows || []).map((e: any) => e.bundleId).filter(Boolean)
   const { data: bundleRows } = bundleIds.length > 0
-    ? await supabase.from('Bundle').select('id, name, startDate, cohortSlug').in('id', bundleIds)
+    ? await supabase.from('Bundle').select('id, name, slug, startDate, cohortSlug').in('id', bundleIds)
     : { data: [] as any[] }
 
   const bundleMap: Record<string, any> = Object.fromEntries((bundleRows || []).map((b: any) => [b.id, b]))
   const allEnrollments = (enrollmentRows || []).map((e: any) => ({ ...e, bundle: bundleMap[e.bundleId] || null }))
 
-  const enrollment = allEnrollments.find((e: any) => e.bundle?.cohortSlug === 'launchpad')
+  // Gate on the flagship programme specifically — other Launchpad products
+  // (e.g. the 2-hour First Step bootcamp) must not unlock this dashboard.
+  const enrollment = allEnrollments.find((e: any) => e.bundle?.slug === LAUNCHPAD_FLAGSHIP_SLUG)
   if (!enrollment) return NextResponse.json({ error: 'Not enrolled in Launchpad' }, { status: 403 })
 
   const [

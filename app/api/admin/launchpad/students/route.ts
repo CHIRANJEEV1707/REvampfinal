@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { adminAuth, unauthorizedResponse } from '@/lib/admin-auth'
+import { LAUNCHPAD_FLAGSHIP_SLUG } from '@/lib/launchpad'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,11 +9,12 @@ export async function GET(req: NextRequest) {
   const admin = await adminAuth(req)
   if (!admin) return unauthorizedResponse()
 
-  // Find the launchpad bundle
+  // Flagship programme only — the roster/attendance UI is scoped to the 4-week
+  // cohort, so other Launchpad products must not appear here.
   const { data: bundles } = await supabase
     .from('Bundle')
     .select('id')
-    .eq('cohortSlug', 'launchpad')
+    .eq('slug', LAUNCHPAD_FLAGSHIP_SLUG)
 
   const bundleIds = (bundles || []).map((b: any) => b.id)
   if (bundleIds.length === 0) return NextResponse.json([])

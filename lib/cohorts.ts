@@ -409,6 +409,15 @@ export const COHORTS: Record<string, CohortConfig> = {
         features: ["4-week live program, ~2 hrs/day", "Terminal, Git, Python & Web fundamentals", "Domain deep dives: Web, AI, Security, Open Source", "Week 4 hackathon + Demo Day with REcoins"],
         isPrimary: true,
       },
+      {
+        id: "launchpad-first-step",
+        name: "LAUNCHPAD: FIRST STEP",
+        originalPrice: 199,
+        eventPrice: 199,
+        isDiscounted: false,
+        features: ["2-hour live session on Zoom", "Developer setup guide (macOS, Windows, Linux)", "Ship a real app to a live URL", "REvamp Discord access"],
+        isPrimary: false,
+      },
     ],
     workshopDetails: {
       "launchpad-flagship": {
@@ -439,6 +448,36 @@ export const COHORTS: Record<string, CohortConfig> = {
           "Working knowledge of Terminal, Git, Python & Web basics",
           "Hands-on experience in all 4 major CSE domains",
           "A shipped hackathon project and REcoins for future cohorts",
+        ],
+      },
+      "launchpad-first-step": {
+        name: "LAUNCHPAD: FIRST STEP",
+        tagline: "Two hours. Blank screen to a real app running on the internet.",
+        originalPrice: 199,
+        eventPrice: 199,
+        isDiscounted: false,
+        duration: "2 Hours",
+        startDate: "30 August 2026",
+        schedule: "Sunday, 6\u20138 PM IST \u00b7 Online, live",
+        // 0 \u2192 seed writes null, so no seat meter renders. There is no real cap.
+        maxSeats: 0,
+        seatsLeft: 0,
+        highlights: [
+          "No coding needed \u2014 we start from absolute zero",
+          "Your laptop set up the way an actual developer's is",
+          "A working app on a live URL you can actually show people",
+          "\u20b9199 refunded in full if you stay through and submit the final activity",
+        ],
+        curriculum: [
+          { week: "Before", title: "Setup guide \u2014 ~15 min on your own", topics: ["Terminal, package manager, Git + GitHub, SSH keys", "Node.js + pnpm, Python + uv, Docker", "Shell and dotfiles", "Pick an AI IDE: Antigravity, Cursor, or a terminal agent"] },
+          { week: "Hour 1", title: "From blank screen to running code", topics: ["How the tools actually fit together", "Your first commands, for real this time", "Wiring up an AI IDE and driving it properly"] },
+          { week: "Hour 2", title: "Ship it", topics: ["Build something real, end to end", "Push it to GitHub from the terminal", "Deploy to a live URL", "Where to go next, and who to go with"] },
+        ],
+        outcomes: [
+          "A working app on a live URL",
+          "A laptop configured like a working developer's",
+          "Hands-on time with the AI tools people build with today",
+          "A Discord full of people building alongside you",
         ],
       },
     },
