@@ -10,17 +10,17 @@
 
 export { LAUNCHPAD_FIRST_STEP_SLUG as FIRST_STEP_SLUG } from "./launchpad"
 
-/** 30 August 2026, 6:00 PM IST (UTC+05:30) */
-export const FIRST_STEP_START_ISO = "2026-08-30T18:00:00+05:30"
-/** 30 August 2026, 8:00 PM IST — session ends */
-export const FIRST_STEP_END_ISO = "2026-08-30T20:00:00+05:30"
+/** 6 September 2026, 6:00 PM IST (UTC+05:30) */
+export const FIRST_STEP_START_ISO = "2026-09-06T18:00:00+05:30"
+/** 6 September 2026, 8:00 PM IST — session ends */
+export const FIRST_STEP_END_ISO = "2026-09-06T20:00:00+05:30"
 
 export const FIRST_STEP_META = {
   name: "LAUNCHPAD: FIRST STEP",
   tagline: "Two hours. Blank screen to a real app running on the internet.",
   duration: "2 Hours",
   schedule: "Sunday, 6–8 PM IST",
-  startDateLabel: "30 August 2026",
+  startDateLabel: "6 September 2026",
   price: 199,
   location: "Online, live",
 }
@@ -46,7 +46,7 @@ export const FIRST_STEP_ABOUT = {
   refundNote:
     "Your ₹199 is refunded in full if you stay through the session and submit the final activity. The fee exists to keep the room real — a session this short falls apart when half the seats are people who never show.",
   beforeYouShowUp:
-    "Run the setup guide below before Sunday. It takes about 15 minutes and means we spend the session building instead of watching install bars.",
+    "Run the setup guide below before the session. It takes about 15 minutes and means we spend the session building instead of watching install bars.",
 }
 
 // ─────────────────────────────────────────────────────────────

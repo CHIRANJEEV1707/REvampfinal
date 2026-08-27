@@ -209,7 +209,7 @@ export default function FirstStepTab({ userName }: { userName: string }) {
       {/* ── SETUP GUIDE ── */}
       <div className="border border-white/[0.06] bg-[#0d0d0d]">
         <div className="px-6 py-5 border-b border-white/[0.05]">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#0085FF]">Before Sunday · ~15 min</span>
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#0085FF]">Before the session · ~15 min</span>
           <h3 className="font-headline font-black text-2xl mt-2">Set your laptop up like a developer.</h3>
           <p className="text-white/30 text-xs mt-1">
             Eight steps. Pick your OS, work down the list, copy the commands.

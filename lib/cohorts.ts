@@ -457,7 +457,7 @@ export const COHORTS: Record<string, CohortConfig> = {
         eventPrice: 199,
         isDiscounted: false,
         duration: "2 Hours",
-        startDate: "30 August 2026",
+        startDate: "6 September 2026",
         schedule: "Sunday, 6\u20138 PM IST \u00b7 Online, live",
         // 0 \u2192 seed writes null, so no seat meter renders. There is no real cap.
         maxSeats: 0,
