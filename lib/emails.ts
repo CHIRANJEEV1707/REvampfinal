@@ -1,11 +1,4 @@
-import { Resend } from 'resend'
-
-const resendApiKey = process.env.RESEND_API_KEY
-
-let resend: Resend | null = null
-if (resendApiKey) {
-  resend = new Resend(resendApiKey)
-}
+import { sendEmail } from './resend'
 
 // ─── 1. PENDING EMAIL (sent on payment submission) ───
 
@@ -15,17 +8,10 @@ export async function sendPendingEmail(
   bundleName: string,
   amount: number
 ) {
-  if (!resend) {
-    console.warn('RESEND_API_KEY not set, skipping pending email')
-    return
-  }
-
-  try {
-    await resend.emails.send({
-      from: 'Revamp <noreply@letsrevamp.in>',
-      to,
-      subject: '⏳ Payment Received — Under Verification',
-      html: `
+  await sendEmail({
+    to,
+    subject: '⏳ Payment Received — Under Verification',
+    html: `
         <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #ffffff; border-radius: 16px; overflow: hidden;">
           <div style="background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); padding: 40px 32px; text-align: center;">
             <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Payment Under Review ⏳</h1>
@@ -65,12 +51,8 @@ export async function sendPendingEmail(
             </p>
           </div>
         </div>
-      `,
-    })
-    console.log(`✅ Pending email sent to ${to}`)
-  } catch (error) {
-    console.error('Failed to send pending email:', error)
-  }
+    `,
+  })
 }
 
 // ─── 2. CONFIRMATION EMAIL (sent on admin approval) ───
@@ -81,17 +63,10 @@ export async function sendPaymentConfirmationEmail(
   bundleName: string,
   referralCode: string
 ) {
-  if (!resend) {
-    console.warn('RESEND_API_KEY not set, skipping confirmation email')
-    return
-  }
-
-  try {
-    await resend.emails.send({
-      from: 'Revamp <noreply@letsrevamp.in>',
-      to,
-      subject: '🎉 Payment Confirmed — Welcome to Revamp!',
-      html: `
+  await sendEmail({
+    to,
+    subject: '🎉 Payment Confirmed — Welcome to Revamp!',
+    html: `
         <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #ffffff; border-radius: 16px; overflow: hidden;">
           <div style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); padding: 40px 32px; text-align: center;">
             <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Welcome to Revamp! 🚀</h1>
@@ -134,12 +109,8 @@ export async function sendPaymentConfirmationEmail(
             </p>
           </div>
         </div>
-      `,
-    })
-    console.log(`✅ Confirmation email sent to ${to}`)
-  } catch (error) {
-    console.error('Failed to send confirmation email:', error)
-  }
+    `,
+  })
 }
 
 // ─── 3. REFERRAL EARNING EMAIL (sent to referrer on approval) ───
@@ -152,17 +123,10 @@ export async function sendReferralEarningEmail(
   earning: number,
   totalEarnings: number
 ) {
-  if (!resend) {
-    console.warn('RESEND_API_KEY not set, skipping referral email')
-    return
-  }
-
-  try {
-    await resend.emails.send({
-      from: 'Revamp <noreply@letsrevamp.in>',
-      to,
-      subject: `💰 You earned ₹${earning} from a referral!`,
-      html: `
+  await sendEmail({
+    to,
+    subject: `💰 You earned ₹${earning} from a referral!`,
+    html: `
         <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #ffffff; border-radius: 16px; overflow: hidden;">
           <div style="background: linear-gradient(135deg, #047857 0%, #10b981 100%); padding: 40px 32px; text-align: center;">
             <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Cha-ching! 💰</h1>
@@ -196,10 +160,6 @@ export async function sendReferralEarningEmail(
             </p>
           </div>
         </div>
-      `,
-    })
-    console.log(`✅ Referral earning email sent to ${to}`)
-  } catch (error) {
-    console.error('Failed to send referral earning email:', error)
-  }
+    `,
+  })
 }
